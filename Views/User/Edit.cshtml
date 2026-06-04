@@ -1,0 +1,22 @@
+﻿@model Bulletingboard.Requests.User.UserRequest
+
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<h1 class="h3 mb-3">Edit User</h1>
+
+<form asp-controller="User" asp-action="EditUser" method="post" enctype="multipart/form-data" class="row g-3">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="Img" />
+    <partial name="_UserForm" model="Model" />
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a class="btn btn-secondary" asp-controller="User" asp-action="Detail" asp-route-id="@Model.Id">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

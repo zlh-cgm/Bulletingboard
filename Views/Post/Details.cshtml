@@ -1,0 +1,192 @@
+@model Bulletingboard.ViewModels.Post.PostDetailViewModel
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "Post Details";
+    var post = Model.Data;
+
+    int.TryParse(
+        User.FindFirstValue(ClaimTypes.NameIdentifier),
+        out int userId
+    );
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">Post Details</h2>
+            <small class="text-muted">
+                View post information
+            </small>
+        </div>
+
+        <a asp-action="Index"
+           class="btn btn-outline-secondary">
+            Back
+        </a>
+    </div>
+
+    <div class="card shadow-sm">
+
+        <div class="card-header bg-white">
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div>
+                    <strong>@post.UserName</strong>
+
+                    @if (post.IsPrivate)
+                    {
+                        <span class="badge bg-warning text-dark ms-2">
+                            Private
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success ms-2">
+                            Public
+                        </span>
+                    }
+                </div>
+
+                <small class="text-muted">
+                    @post.CreatedAt
+                </small>
+
+            </div>
+        </div>
+
+        <div class="card-body">
+            <p class="fs-5 mb-4">
+                @post.Description
+            </p>
+        </div>
+
+        <div class="card-footer bg-white">
+
+            <div class="d-flex gap-2 flex-wrap">
+
+                @if (userId == post.UserId)
+                {
+                    <a asp-action="Edit"
+                       asp-route-id="@post.Id"
+                       class="btn btn-outline-warning">
+                        Edit
+                    </a>
+
+                    <form class="d-inline"
+                          asp-action="Delete"
+                          asp-route-id="@post.Id"
+                          method="post"
+                          onsubmit="return confirm('Delete this post?');">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit"
+                                class="btn btn-outline-danger">
+                            Delete
+                        </button>
+
+                    </form>
+                }
+
+            </div>
+
+        </div>
+        @if (userId > 0)
+        {
+            <div class="border-top p-3">
+
+                <h5 class="mb-3">
+                    Add Comment
+                </h5>
+
+                <form asp-controller="Comment"
+                      asp-action="Create"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden"
+                           name="PostId"
+                           value="@post.Id" />
+
+                    <textarea class="form-control mb-2"
+                              name="Content"
+                              rows="3"
+                              placeholder="Write a comment..."></textarea>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Submit Comment
+                    </button>
+
+                </form>
+
+            </div>
+        }
+
+        <div class="border-top p-3 bg-light">
+
+            <h5 class="mb-3">
+                Comments (@(post.Comments?.Count ?? 0))
+            </h5>
+
+            @if (post.Comments?.Any() == true)
+            {
+                @foreach (var comment in post.Comments)
+                {
+                    <div class="card mb-2">
+
+                        <div class="card-body py-2">
+
+                            <div class="d-flex justify-content-between mb-2">
+
+                                <strong>
+                                    @comment.UserName
+                                </strong>
+
+                                <small class="text-muted">
+                                    @comment.CreatedAt
+                                </small>
+
+                            </div>
+
+                            <div>
+                                @comment.Content
+                            </div>
+
+                            @if (userId == post.UserId || userId == comment.UserId)
+                            {
+                                <form class="mt-2"
+                                      asp-controller="Comment"
+                                      asp-action="Delete"
+                                      asp-route-id="@comment.Id"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger">
+                                        Delete
+                                    </button>
+
+                                </form>
+                            }
+
+                        </div>
+
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-muted">
+                    No comments yet.
+                </div>
+            }
+        </div>
+
+    </div>
+
+</div>

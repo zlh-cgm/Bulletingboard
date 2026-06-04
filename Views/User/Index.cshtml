@@ -1,0 +1,63 @@
+﻿@using Bulletingboard.Constraints
+@model Bulletingboard.ViewModels.User.UserViewModel
+
+@{
+    ViewData["Title"] = "User List";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">User List</h1>
+    <a class="btn btn-primary" asp-controller="User" asp-action="Create">Create User</a>
+</div>
+
+@if (TempData["SuccessMsgForUser"] is not null)
+{
+    <div class="alert alert-success">@TempData["SuccessMsgForUser"]</div>
+}
+
+@if (TempData["ErrorMsg"] is not null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMsg"]</div>
+}
+
+<div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle">
+        <thead class="table-light">
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Created At</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Response.Any())
+            {
+                foreach (var user in Model.Response)
+                {
+                    <tr>
+                        <td>@user.Name</td>
+                        <td>@user.Email</td>
+                        <td>@(user.Role == UserRoles.Admin ? "Admin" : "Member")</td>
+                        <td>@user.CreatedAt</td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-secondary" asp-controller="User" asp-action="Detail" asp-route-id="@user.Id">Detail</a>
+                            <a class="btn btn-sm btn-outline-primary" asp-controller="User" asp-action="EditionRequest" asp-route-id="@user.Id">Edit</a>
+                            <form class="d-inline" asp-controller="User" asp-action="DeleteUser" asp-route-id="@user.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="text-center text-muted">No users found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

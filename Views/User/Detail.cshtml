@@ -1,0 +1,241 @@
+﻿@using Bulletingboard.Constraints
+@model Bulletingboard.ViewModels.User.UserDetailViewModel
+
+@{
+    ViewData["Title"] = "User Detail";
+    var user = Model.User;
+    var publicPosts = Model.Posts.Where(p => !p.IsPrivate);
+    var privatePosts = Model.Posts.Where(p => p.IsPrivate);
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">User Detail</h1>
+    <div>
+        <a class="btn btn-outline-primary" asp-controller="User" asp-action="EditionRequest" asp-route-id="@user.Id">Edit</a>
+    </div>
+</div>
+
+<!-- User Detail Card -->
+<div class="card">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                @if (!string.IsNullOrWhiteSpace(user.Img))
+                {
+                    <img src="~/uploads/users/@user.Img" alt="@user.Name" class="img-thumbnail" />
+                }
+                else
+                {
+                    <div class="border rounded text-muted d-flex align-items-center justify-content-center" style="height: 160px;">No image</div>
+                }
+            </div>
+            <div class="col-md-9">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">Name</dt>
+                    <dd class="col-sm-9">@user.Name</dd>
+
+                    <dt class="col-sm-3">Email</dt>
+                    <dd class="col-sm-9">@user.Email</dd>
+
+                    <dt class="col-sm-3">Role</dt>
+                    <dd class="col-sm-9">@(user.Role == UserRoles.Admin ? "Admin" : "Member")</dd>
+
+                    <dt class="col-sm-3">Created At</dt>
+                    <dd class="col-sm-9">@user.CreatedAt</dd>
+
+                    <dt class="col-sm-3">Updated At</dt>
+                    <dd class="col-sm-9">@(user.UpdatedAt ?? "-")</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Uesr's Posts -->
+<div class="row">
+
+    <!-- Public Posts -->
+    <div class="col-lg-8">
+
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    🌍 Public Posts
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                @if (!publicPosts.Any())
+                {
+                    <div class="text-center py-4 text-muted">
+                        <h5>No Public Posts</h5>
+                        <p class="mb-0">
+                            Create a public post to get started.
+                        </p>
+                    </div>
+                }
+
+                @foreach (var post in publicPosts)
+                {
+                    <div class="card border-0 shadow-sm mb-3">
+
+                        <div class="card-body">
+
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex">
+                                    <h5 class="mb-0">
+                                        Post #@post.Id
+                                    </h5>
+                                    <small>@@@post.UserName</small>
+                                </div>
+
+                                <small class="text-muted">
+                                    @post.CreatedAt
+                                </small>
+                            </div>
+
+                            <span class="badge bg-success mb-3">
+                                Public
+                            </span>
+
+                            <p class="mb-0">
+                                @post.Description
+                            </p>
+
+                        </div>
+
+                        <div class="card-footer bg-white">
+
+                            <a class="btn btn-sm btn-outline-secondary"
+                               asp-controller="Post"
+                               asp-action="Details"
+                               asp-route-id="@post.Id">
+                                Detail
+                            </a>
+
+                            <a class="btn btn-sm btn-outline-warning"
+                               asp-controller="Post"
+                               asp-action="Edit"
+                               asp-route-id="@post.Id">
+                                Edit
+                            </a>
+
+                            <form class="d-inline"
+                                  asp-controller="Post"
+                                  asp-action="Delete"
+                                  asp-route-id="@post.Id"
+                                  method="post"
+                                  onsubmit="return confirm('Are you sure you want to delete this post?');">
+
+                                @Html.AntiForgeryToken()
+
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger">
+                                    Delete
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Private Posts -->
+    <div class="col-lg-4">
+
+        <div class="card shadow-sm border-warning">
+
+            <div class="card-header bg-warning-subtle">
+                <h5 class="mb-0">
+                    🔒 Private Posts
+                </h5>
+            </div>
+
+            <div class="card-body">
+
+                @if (!privatePosts.Any())
+                {
+                    <div class="text-center py-4 text-muted">
+                        <h6>No Private Posts</h6>
+                    </div>
+                }
+
+                @foreach (var post in privatePosts)
+                {
+                    <div class="card border-warning mb-3">
+
+                        <div class="card-body">
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex">
+                                    <strong>
+                                        Post #@post.Id
+                                    </strong>
+                                    <small>@@@post.UserName</small>
+                                </div>
+
+                                <small class="text-muted">
+                                    @post.CreatedAt
+                                </small>
+                            </div>
+
+                            <span class="badge bg-warning text-dark mt-2 mb-2">
+                                Private
+                            </span>
+
+                            <p class="mb-0">
+                                @post.Description
+                            </p>
+
+                        </div>
+
+                        <div class="card-footer bg-white">
+
+                            <a class="btn btn-sm btn-outline-secondary"
+                               asp-controller="Post"
+                               asp-action="Details"
+                               asp-route-id="@post.Id">
+                                Details
+                            </a>
+
+                            <a class="btn btn-sm btn-outline-warning"
+                               asp-controller="Post"
+                               asp-action="Edit"
+                               asp-route-id="@post.Id">
+                                Edit
+                            </a>
+
+                            <form class="d-inline"
+                                  asp-controller="Post"
+                                  asp-action="Delete"
+                                  asp-route-id="@post.Id"
+                                  method="post"
+                                  onsubmit="return confirm('Are you sure you want to delete this post?');">
+
+                                @Html.AntiForgeryToken()
+
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger">
+                                    Delete
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
