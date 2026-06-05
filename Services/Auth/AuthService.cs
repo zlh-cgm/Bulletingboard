@@ -79,13 +79,12 @@ namespace Bulletingboard.Services.Auth
             {
                 return;
             }
-            if (resetPasswordDto.NewPassword == resetPasswordDto.ConfirmPassword)
-            {
-                user.Password = _passwordHasher.HashPassword(user, resetPasswordDto.NewPassword);
-                user.ResetToken = null;
-                user.ResetTokenExpireIn=null;
-                await _userDao.DbUpdateUserAsync(user);
-            }
+
+            user.Password = _passwordHasher.HashPassword(user, resetPasswordDto.NewPassword);
+            user.ResetToken = null;
+            user.ResetTokenExpireIn=null;
+            await _userDao.DbUpdateUserAsync(user);
+
         }
     }
 }

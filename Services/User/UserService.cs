@@ -1,4 +1,5 @@
 ﻿using Bulletingboard.DAO.User;
+using Bulletingboard.DTO.Auth;
 using Bulletingboard.DTO.User;
 using Bulletingboard.Requests.User;
 using Microsoft.AspNetCore.Identity;
@@ -72,11 +73,6 @@ public class UserService : IUserService
         user.UpdatedAt = DateTime.Now;
         user.UpdatedBy = 1;
 
-        if (!string.IsNullOrWhiteSpace(userDto.Password))
-        {
-            user.Password = _passwordHasher.HashPassword(user, userDto.Password);
-        }
-
         var imageName = await SaveUserImageAsync(userDto.FileUpload);
         if (!string.IsNullOrWhiteSpace(imageName))
         {
@@ -85,6 +81,28 @@ public class UserService : IUserService
         }
 
         await _userDao.DbUpdateUserAsync(user);
+    }
+
+    public async Task<bool> ChangePasswordAsync(ChangePasswordRequest changePasswordRequest)
+    {
+        var user = await _userDao.DbGetUserByIdAsync(changePasswordRequest.Id);
+        if (user is null)
+        {
+            return false;
+        }
+
+        var verificationResult = _passwordHasher.VerifyHashedPassword(user, user.Password, changePasswordRequest.OldPassword);
+
+        if (verificationResult == PasswordVerificationResult.Failed)
+        {
+            return false;
+        }
+
+
+        user.Password = _passwordHasher.HashPassword(user, changePasswordRequest.NewPassword);
+
+        await _userDao.DbUpdateUserAsync(user);
+        return true;
     }
 
     public async Task DeleteUserAsync(int userId)

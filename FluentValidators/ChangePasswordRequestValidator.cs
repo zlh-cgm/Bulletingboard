@@ -1,12 +1,16 @@
 ﻿using FluentValidation;
-using Bulletingboard.Requests.Auth;
+using Bulletingboard.Requests.User;
 
 namespace Bulletingboard.FluentValidators
 {
-    public class ResetPasswordRequestValidator:AbstractValidator<ResetPasswordRequest>
+    public class ChangePasswordRequestValidator:AbstractValidator<ChangePasswordRequest>
     {
-        public ResetPasswordRequestValidator() 
+        public ChangePasswordRequestValidator()
         {
+            RuleFor(x => x.OldPassword)
+            .NotEmpty().WithMessage("Old password is required.")
+            .MinimumLength(6).WithMessage("Password must be at least 8 characters long.");
+
             RuleFor(x => x.NewPassword)
             .NotEmpty().WithMessage("New password is required.")
             .MinimumLength(6).WithMessage("Password must be at least 8 characters long.");

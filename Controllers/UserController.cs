@@ -124,6 +124,44 @@ public class UserController : Controller
         TempData["SuccessMsgForUser"] = "User has been updated successfully.";
         return RedirectToAction(nameof(Detail), new { id = userRequest.Id });
     }
+    [HttpGet("ChangePassword/{id:int}")]
+    public async Task<IActionResult> ChangePassword(int id)
+    {
+        var user = await _userService.GetUserByIdAsync(id);
+        if (user is null)
+        {
+            TempData["ErrorMsg"] = "User was not found.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int userId);
+        if (userId != user.Id)
+        {
+            return Forbid();
+        }
+
+        return View(new ChangePasswordRequest() { Id=userId});
+    }
+
+    [HttpPost("ChangePassword")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangePassword(ChangePasswordRequest changePasswordRequest)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(changePasswordRequest);
+        }
+
+        var result=await _userService.ChangePasswordAsync(changePasswordRequest);
+        if (!result)
+        {
+            TempData["ErrMsgForChangePassword"] = "Wrong Old Password!";
+            changePasswordRequest.ClearAllField();
+            return View(changePasswordRequest);
+        }
+        TempData["SuccessMsgForChangePassword"] = "Password has been updated successfully.";
+        return RedirectToAction(nameof(Detail), new { id = changePasswordRequest.Id });
+    }
 
     [HttpPost("delete/{id:int}")]
     [ValidateAntiForgeryToken]

@@ -10,7 +10,7 @@
     @Html.AntiForgeryToken()
     <input type="hidden" asp-for="Id" />
     <input type="hidden" asp-for="Img" />
-    <partial name="_UserForm" model="Model" />
+    <partial name="_UserEditForm" model="Model" />
     <div class="col-12">
         <button type="submit" class="btn btn-primary">Update</button>
         <a class="btn btn-secondary" asp-controller="User" asp-action="Detail" asp-route-id="@Model.Id">Cancel</a>
