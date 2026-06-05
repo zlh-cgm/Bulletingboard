@@ -1,0 +1,37 @@
+﻿@model Bulletingboard.Requests.Auth.ResetPasswordRequest
+
+@{
+    ViewData["Title"] = "Reset_Password";
+}
+
+<h2>Login</h2>
+@if (TempData["SuccessMsgForReset"] is not null)
+{
+    <div class="alert alert-success">@TempData["SuccessMsgForReset"]</div>
+}
+<form asp-action="Reset" method="post">
+    <input asp-for="Id" type="hidden" />
+
+    <div class="mb-3">
+        <label asp-for="NewPassword" class="form-label"></label>
+        <input asp-for="NewPassword" type="password" class="form-control" />
+        <span asp-validation-for="NewPassword" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ConfirmPassword" class="form-label"></label>
+        <input asp-for="ConfirmPassword" type="password" class="form-control" />
+        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Reset
+    </button>
+
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "Invalid Token";
+}
+
+<div class="container mt-5">
+    <div class="text-center">
+        <h1 class="display-4 text-danger">403</h1>
+        <h2>Invalid Token</h2>
+        <p class="text-muted">
+            Your Password Reset Link is <strong>Invalid</strong> or <strong>Expired</strong>!
+        </p>
+
+        <a asp-controller="Auth"
+           asp-action="Login"
+           class="btn btn-primary mt-3">
+            Return Login
+        </a>
+    </div>
+</div>

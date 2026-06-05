@@ -101,7 +101,7 @@ public class UserController : Controller
         }
         int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int userId);
 
-        Console.WriteLine($"isAdmin:{User.IsInRole("Admin")},userIdCheck:{userId != user.Id}");
+
         if (!User.IsInRole("Admin") && userId != user.Id)
         { 
             return Forbid();

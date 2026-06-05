@@ -4,6 +4,7 @@ using Bulletingboard.Entity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Bulletingboard.Migrations
 {
     [DbContext(typeof(BulletingboardDbContext))]
-    partial class BulletingboardDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260604101633_add_field_in_user_table_for_reset_password")]
+    partial class add_field_in_user_table_for_reset_password
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

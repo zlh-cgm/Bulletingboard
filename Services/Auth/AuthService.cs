@@ -1,7 +1,8 @@
 ﻿using Bulletingboard.DAO.User;
 using Bulletingboard.DTO.Auth;
-using Bulletingboard.DTO.User;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc;
 using UserEntity = Bulletingboard.Entity.User;
 
 namespace Bulletingboard.Services.Auth
@@ -10,11 +11,13 @@ namespace Bulletingboard.Services.Auth
     {
         private readonly IUserDao _userDao;
         private readonly IPasswordHasher<UserEntity> _passwordHasher;
+        private readonly IEmailSender _emailSender;
 
-        public AuthService(IUserDao userDao, IPasswordHasher<UserEntity> passwordHasher)
+        public AuthService(IUserDao userDao, IPasswordHasher<UserEntity> passwordHasher, IEmailSender emailSender)
         {
             _userDao = userDao;
             _passwordHasher = passwordHasher;
+            _emailSender = emailSender;
         }
 
         public async Task<LoginResultDto?> LoginAsync(LoginDto loginDto)
@@ -42,6 +45,47 @@ namespace Bulletingboard.Services.Auth
                 Role = RoleName
             };
             return result;
+        }
+        public async Task<bool> SendEmailAsync(string email)
+        { 
+            var user=await _userDao.DbGetUserByEmailAsync(email);
+            if (user == null) 
+            {
+                return false;
+            }
+            string token = Guid.NewGuid().ToString();
+            user.ResetToken=token;
+            user.ResetTokenExpireIn = DateTime.Now.AddMinutes(10);
+            string callbackUrl = $"https://localhost:7298/Auth/Reset/?userId={user.Id}&token={token}";
+            await _emailSender.SendEmailAsync(email, "Reset Password", callbackUrl);
+            await _userDao.DbUpdateUserAsync(user);
+            return true;
+        }
+
+        public async Task<bool> ValidateResetLinkAsync(int id, string token)
+        { 
+            var user=await _userDao.DbGetUserByIdAsync(id);
+            if (user==null || user.ResetToken!=token || DateTime.Now>user.ResetTokenExpireIn)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public async Task ResetPasswordAsync(ResetPasswordDto resetPasswordDto)
+        {
+            var user=await _userDao.DbGetUserByIdAsync(resetPasswordDto.UserId);
+            if (user == null)
+            {
+                return;
+            }
+            if (resetPasswordDto.NewPassword == resetPasswordDto.ConfirmPassword)
+            {
+                user.Password = _passwordHasher.HashPassword(user, resetPasswordDto.NewPassword);
+                user.ResetToken = null;
+                user.ResetTokenExpireIn=null;
+                await _userDao.DbUpdateUserAsync(user);
+            }
         }
     }
 }

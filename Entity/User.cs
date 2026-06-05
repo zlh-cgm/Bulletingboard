@@ -21,6 +21,7 @@ public class User
     public DateTime CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }
-
+    public string? ResetToken { get; set; }
+    public DateTime? ResetTokenExpireIn { get; set; }
     public List<Post> posts { get; set; }
 }

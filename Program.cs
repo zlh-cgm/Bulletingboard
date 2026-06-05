@@ -5,13 +5,16 @@ using Bulletingboard.Entity;
 using Bulletingboard.FluentValidators;
 using Bulletingboard.Services.Auth;
 using Bulletingboard.Services.Comment;
+using Bulletingboard.Services.Mail;
 using Bulletingboard.Services.Post;
 using Bulletingboard.Services.User;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using MySqlConnector;
 using UserEntity = Bulletingboard.Entity.User;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,10 +25,23 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<PostRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<ResetPasswordRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<ForgotPasswordRequestValidator>();
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+var conStrBuilder = new MySqlConnectionStringBuilder(
+        builder.Configuration.GetConnectionString("DefaultConnection"));
+
+conStrBuilder.Password = builder.Configuration["DbPassword"];
+var connectionString = conStrBuilder.ConnectionString;
+
 builder.Services.AddDbContext<BulletingboardDbContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
+
+builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.Configure<AuthMessageSenderOptions>(builder.Configuration);
+
 builder.Services.AddScoped<IUserDao, UserDao>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAuthService, AuthService>();

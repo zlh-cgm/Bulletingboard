@@ -3,6 +3,7 @@ using Bulletingboard.DTO.User;
 using Bulletingboard.Entity;
 using Bulletingboard.Requests.Auth;
 using Bulletingboard.Services.Auth;
+using Bulletingboard.Services.User;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
@@ -64,7 +65,6 @@ namespace Bulletingboard.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal);
 
-            Console.WriteLine(ReturnUrl);
             if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
             {
                 return LocalRedirect(ReturnUrl);
@@ -82,5 +82,49 @@ namespace Bulletingboard.Controllers
 
         }
 
+        public async Task<IActionResult> ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest forgotPasswordRequest)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(forgotPasswordRequest);
+            }
+            var result=await _authService.SendEmailAsync(forgotPasswordRequest.Email);
+            if (!result)
+            {
+                TempData["ErrMsgForEmail"] = "There's no account link to this Email or There's ERROR while sending email";
+                return View();
+            }
+            TempData["SuccessMsgForEmail"] = "Result link has been send to your email successfully.";
+            return View(forgotPasswordRequest);
+        }
+
+        public async Task<IActionResult> Reset(string userId, string token)
+        {
+            int.TryParse(userId, out int id);
+            var isValid=await _authService.ValidateResetLinkAsync(id,token);
+            if (!isValid)
+            {
+                return RedirectToAction("InvalidToken", "Auth");
+            }
+            return View(new ResetPasswordRequest() {Id=id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Reset(ResetPasswordRequest resetPasswordRequest)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(resetPasswordRequest);
+            }
+            await _authService.ResetPasswordAsync(new ResetPasswordDto(resetPasswordRequest));
+            TempData["SuccessMsgForReset"] = "Password has been saved successfully.";
+            return View();
+        }
     }
 }

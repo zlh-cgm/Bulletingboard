@@ -108,7 +108,7 @@ namespace Bulletingboard.Controllers
                 return NotFound();
             }
             int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int userId);
-            Console.WriteLine($"userId:{userId}, postUserId:{post.UserId}");
+
             if (userId != post.UserId)
             { 
                 return Forbid();
