@@ -6,8 +6,17 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">User List</h1>
-    <a class="btn btn-primary" asp-controller="User" asp-action="Create">Create User</a>
+    <div class="d-flex align-items-center gap-3">
+        <h1 class="h3 mb-0">User List</h1>
+        <div>
+            <a class="btn btn-primary" asp-controller="User" asp-action="DownloadCSV">Download Users CSV</a>
+        </div>
+    </div>
+   
+    <div class="gap-1">
+        <a class="btn btn-primary" asp-controller="User" asp-action="Create">Create User</a>
+        <a class="btn btn-primary" asp-controller="User" asp-action="UploadCSV">Upload Users CSV</a>
+    </div>
 </div>
 
 @if (TempData["SuccessMsgForUser"] is not null)

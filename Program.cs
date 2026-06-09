@@ -28,6 +28,8 @@ builder.Services.AddValidatorsFromAssemblyContaining<PostRequestValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<ResetPasswordRequestValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<ForgotPasswordRequestValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<ChangePasswordRequestValidator>();
+builder.Services.AddValidatorsFromAssemblyContaining<UploadCSVRequestValidator>();
+
 
 
 //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");

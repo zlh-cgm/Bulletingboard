@@ -17,6 +17,12 @@ namespace Bulletingboard.Controllers
             _commentService = commentService;
         }
 
+        /// <summary>
+        /// Post-New comment
+        /// POST: /Comment/Create
+        /// </summary>
+        /// <param name="commentRequest"></param>
+        /// <returns></returns>
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -34,6 +40,12 @@ namespace Bulletingboard.Controllers
             return RedirectToAction("Index", "Post");
         }
 
+        /// <summary>
+        /// Delete-A comment
+        /// Delete: /Comment/:id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)

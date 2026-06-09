@@ -1,0 +1,35 @@
+﻿@model Bulletingboard.Requests.User.UploadCSVRequest
+
+@{
+    ViewData["Title"] = "Users CSV Upload";
+}
+
+<h2>Users CSV Upload</h2>
+@if (TempData["SuccessMsgForUpload"] is not null)
+{
+    <div class="alert alert-success">@TempData["SuccessMsgForUpload"]</div>
+}
+@if (TempData["ErrMsgForUpload"] is not null)
+{
+    <div class="alert alert-danger">@TempData["ErrMsgForUpload"]</div>
+}
+
+<form asp-action="UploadCSV" method="post" enctype="multipart/form-data">
+
+    <div class="col-md-6">
+        <label asp-for="CSVFile" class="form-label"></label>
+        <input asp-for="CSVFile" class="form-control" type="file" accept=".csv" />
+        <span asp-validation-for="CSVFile" class="text-danger"></span>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">
+        Submit
+    </button>
+
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

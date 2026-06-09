@@ -2,7 +2,10 @@
 using Bulletingboard.DTO.Auth;
 using Bulletingboard.DTO.User;
 using Bulletingboard.Requests.User;
+using CsvHelper;
 using Microsoft.AspNetCore.Identity;
+using System.Globalization;
+using System.Text;
 using UserEntity = Bulletingboard.Entity.User;
 
 namespace Bulletingboard.Services.User;
@@ -48,6 +51,17 @@ public class UserService : IUserService
         userDto.Id = user.Id;
     }
 
+    public async Task AddUserListAsync(List<UserRequest> userRequests)
+    {
+        foreach (var userRequest in userRequests)
+        {
+            var userDto = new UserDto(userRequest);
+            var user = userDto.BindDbModel();
+            user.Password = _passwordHasher.HashPassword(user, user.Password);
+            await _userDao.DbAddUserAsync(user);
+            userDto.Id = user.Id;
+        }
+    }
     public async Task<UserDto?> GetUserByIdAsync(int userId)
     {
         var user = await _userDao.DbGetUserByIdAsync(userId);
@@ -83,26 +97,25 @@ public class UserService : IUserService
         await _userDao.DbUpdateUserAsync(user);
     }
 
-    public async Task<bool> ChangePasswordAsync(ChangePasswordRequest changePasswordRequest)
+    public async Task ChangePasswordAsync(ChangePasswordRequest changePasswordRequest)
     {
         var user = await _userDao.DbGetUserByIdAsync(changePasswordRequest.Id);
         if (user is null)
         {
-            return false;
+            throw new InvalidDataException("There's no user.");
         }
 
         var verificationResult = _passwordHasher.VerifyHashedPassword(user, user.Password, changePasswordRequest.OldPassword);
 
         if (verificationResult == PasswordVerificationResult.Failed)
         {
-            return false;
+            throw new InvalidDataException("Wrong Old Password!");
         }
 
 
         user.Password = _passwordHasher.HashPassword(user, changePasswordRequest.NewPassword);
 
         await _userDao.DbUpdateUserAsync(user);
-        return true;
     }
 
     public async Task DeleteUserAsync(int userId)
@@ -114,6 +127,48 @@ public class UserService : IUserService
         }
 
         await _userDao.DbDeleteUserAsync(userId);
+    }
+
+    public async Task<byte[]> DownloadUserListCSVAsync()
+    {
+        var userList = await GetUserInfoListAsync();
+        using (var memoryStream = new MemoryStream())
+        using (var streamWriter = new StreamWriter(memoryStream, Encoding.UTF8))
+        using (var csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
+        {
+            csvWriter.WriteRecords(userList);
+            streamWriter.Flush();
+            var fileBytes = memoryStream.ToArray();
+            return fileBytes;
+        }
+    }
+
+    public async Task UploadUserListAsync(UploadCSVRequest uploadCSVRequest)
+    {
+        using (var stream = uploadCSVRequest.CSVFile.OpenReadStream())
+        using (var reader = new StreamReader(stream))
+        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+        {
+            var records = csv.GetRecords<UserRequest>().ToList();
+
+            if (records.Count == 0)
+            {
+                throw new InvalidDataException("File is empty.");
+            }
+
+            bool hasDuplicates = records.GroupBy(u => u.Email).Any(g => g.Count() > 1) ||
+                                 records.GroupBy(u => u.Name).Any(g => g.Count() > 1);
+            if (hasDuplicates)
+            {
+                throw new InvalidDataException("Your file has Duplicate Email or Name.");
+            }
+
+            if (await ListAddDuplicateValidationErrors(records))
+            {
+                throw new InvalidDataException("User name or email already exists.");
+            }
+            await AddUserListAsync(records);
+        }
     }
 
     private async Task<string?> SaveUserImageAsync(IFormFile? file)
@@ -152,5 +207,21 @@ public class UserService : IUserService
         {
             File.Delete(filePath);
         }
+    }
+    private async Task<bool> ListAddDuplicateValidationErrors(List<UserRequest> userRequests)
+    {
+        foreach (var userRequest in userRequests)
+        {
+            if (await CheckDuplicateUserAsync(userRequest, "name"))
+            {
+                return true;
+            }
+
+            if (await CheckDuplicateUserAsync(userRequest, "email"))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }

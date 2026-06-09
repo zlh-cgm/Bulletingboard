@@ -1,5 +1,6 @@
 ﻿using Bulletingboard.Constraints;
 using Bulletingboard.Requests.User;
+using CsvHelper.Configuration.Attributes;
 using UserEntity = Bulletingboard.Entity.User;
 
 namespace Bulletingboard.DTO.User;
@@ -12,16 +13,19 @@ public class UserDto
 
     public string Email { get; set; } = string.Empty;
 
+    [Ignore]
     public string? Password { get; set; }
 
-    public int Role { get; set; }
+    public int Role { get; set; } = 2;
 
+    [Ignore]
     public string? Img { get; set; }
 
     public string CreatedAt { get; set; } = string.Empty;
 
     public string? UpdatedAt { get; set; }
 
+    [Ignore]
     public IFormFile? FileUpload { get; set; }
 
     public UserDto()

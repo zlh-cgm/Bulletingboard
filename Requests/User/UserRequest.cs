@@ -1,11 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Bulletingboard.Constraints;
 using Bulletingboard.DTO.User;
-
+using CsvHelper.Configuration.Attributes;
 namespace Bulletingboard.Requests.User;
 
 public class UserRequest : IValidatableObject
 {
+    [Optional]
     public int? Id { get; set; }
 
     [Required]
@@ -20,15 +21,19 @@ public class UserRequest : IValidatableObject
     [StringLength(255, MinimumLength = 6)]
     public string? Password { get; set; }
 
+    [Optional]
     [Display(Name = "Confirm Password")]
     public string? ConfirmPassword { get; set; }
 
+    [Optional]
     [Display(Name = "Role")]
     [Range(UserRoles.Admin, UserRoles.Member)]
     public int Role { get; set; } = UserRoles.Member;
 
+    [Optional]
     public string? Img { get; set; }
 
+    [Ignore]
     [Display(Name = "Profile Image")]
     public IFormFile? FileUpload { get; set; }
 

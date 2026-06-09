@@ -1,13 +1,8 @@
 ﻿using Bulletingboard.DTO.Auth;
-using Bulletingboard.DTO.User;
-using Bulletingboard.Entity;
 using Bulletingboard.Requests.Auth;
 using Bulletingboard.Services.Auth;
-using Bulletingboard.Services.User;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -21,11 +16,22 @@ namespace Bulletingboard.Controllers
         {
             _authService = authService;
         }
+        /// <summary>
+        /// Get-Login view
+        /// GET: /Auth/Login
+        /// </summary>
+        /// <returns></returns>
         public IActionResult Login()
         {
             return View();
         }
-
+        /// <summary>
+        /// Post-User Login
+        /// POST: /Auth/Login
+        /// </summary>
+        /// <param name="loginRequest"></param>
+        /// <param name="ReturnUrl"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> Login(LoginRequest loginRequest, string ReturnUrl = null)
         {
@@ -73,6 +79,11 @@ namespace Bulletingboard.Controllers
             return RedirectToAction("Index", "Post");
 
         }
+        /// <summary>
+        /// Get-logout
+        /// GET: /Auth/Logout
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(
@@ -81,12 +92,20 @@ namespace Bulletingboard.Controllers
             return RedirectToAction("Index", "Post");
 
         }
-
+        /// <summary>
+        /// Get-forgot password input form view
+        /// GET: /Auth/ForgotPassword
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> ForgotPassword()
         {
             return View();
         }
-
+        /// <summary>
+        /// Post-forgot password form
+        /// POST: /Auth/ForgotPassword
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest forgotPasswordRequest)
         {
@@ -103,7 +122,11 @@ namespace Bulletingboard.Controllers
             TempData["SuccessMsgForEmail"] = "Result link has been send to your email successfully.";
             return View(forgotPasswordRequest);
         }
-
+        /// <summary>
+        /// Get-Reset password input form view
+        /// GET: /Auth/Reset
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> Reset(string userId, string token)
         {
             int.TryParse(userId, out int id);
@@ -114,7 +137,11 @@ namespace Bulletingboard.Controllers
             }
             return View(new ResetPasswordRequest() {Id=id });
         }
-
+        /// <summary>
+        /// Post-reset password form
+        /// POST: /Auth/Reset
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         public async Task<IActionResult> Reset(ResetPasswordRequest resetPasswordRequest)
         {

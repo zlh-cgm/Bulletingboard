@@ -2,7 +2,6 @@
 using Bulletingboard.DTO.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
 using UserEntity = Bulletingboard.Entity.User;
 
 namespace Bulletingboard.Services.Auth
@@ -19,7 +18,6 @@ namespace Bulletingboard.Services.Auth
             _passwordHasher = passwordHasher;
             _emailSender = emailSender;
         }
-
         public async Task<LoginResultDto?> LoginAsync(LoginDto loginDto)
         {
             var user = await _userDao.DbGetUserByEmailAsync(loginDto.Email);
@@ -55,7 +53,7 @@ namespace Bulletingboard.Services.Auth
             }
             string token = Guid.NewGuid().ToString();
             user.ResetToken=token;
-            user.ResetTokenExpireIn = DateTime.Now.AddMinutes(10);
+            user.ResetTokenExpireAt = DateTime.Now.AddMinutes(10);
             string callbackUrl = $"https://localhost:7298/Auth/Reset/?userId={user.Id}&token={token}";
             await _emailSender.SendEmailAsync(email, "Reset Password", callbackUrl);
             await _userDao.DbUpdateUserAsync(user);
@@ -65,7 +63,7 @@ namespace Bulletingboard.Services.Auth
         public async Task<bool> ValidateResetLinkAsync(int id, string token)
         { 
             var user=await _userDao.DbGetUserByIdAsync(id);
-            if (user==null || user.ResetToken!=token || DateTime.Now>user.ResetTokenExpireIn)
+            if (user==null || user.ResetToken!=token || DateTime.Now>user.ResetTokenExpireAt)
             {
                 return false;
             }
@@ -82,7 +80,7 @@ namespace Bulletingboard.Services.Auth
 
             user.Password = _passwordHasher.HashPassword(user, resetPasswordDto.NewPassword);
             user.ResetToken = null;
-            user.ResetTokenExpireIn=null;
+            user.ResetTokenExpireAt=null;
             await _userDao.DbUpdateUserAsync(user);
 
         }

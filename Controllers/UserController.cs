@@ -1,6 +1,5 @@
 ﻿using Bulletingboard.DTO.Post;
 using Bulletingboard.DTO.User;
-using Bulletingboard.Entity;
 using Bulletingboard.Requests.User;
 using Bulletingboard.Services.Post;
 using Bulletingboard.Services.User;
@@ -22,7 +21,11 @@ public class UserController : Controller
         _userService = userService;
         _postService = postService;
     }
-
+    /// <summary>
+    /// Get-All users list
+    /// GET: /user/user-list
+    /// </summary>
+    /// <returns></returns>
     [Authorize(Roles = "Admin")]
     [HttpGet("")]
     [HttpGet("user-list")]
@@ -32,14 +35,22 @@ public class UserController : Controller
         var viewModel = new UserViewModel { Response = users };
         return View(viewModel);
     }
-
-
+    /// <summary>
+    /// Get-Create new user form view
+    /// GET: /user/regist-request
+    /// </summary>
+    /// <returns></returns>
     [HttpGet("regist-request")]
     public IActionResult Create()
     {
         return View(new UserRequest());
     }
-
+    /// <summary>
+    /// Post-new user
+    /// POST: /user/registration
+    /// </summary>
+    /// <param name="userRequest"></param>
+    /// <returns></returns>
     [HttpPost("registration")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SaveUser(UserRequest userRequest)
@@ -50,16 +61,16 @@ public class UserController : Controller
             return View("Create", userRequest);
         }
 
-        if (!User.IsInRole("Admin"))
-        {
-            userRequest.Role = 2;
-        }
-
         await _userService.AddUserAsync(new UserDto(userRequest));
         TempData["SuccessMsgForUser"] = "User has been saved successfully.";
         return RedirectToAction(nameof(Index));
     }
-
+    /// <summary>
+    /// Get-detail view of user
+    /// GET: /user/detail/:id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [HttpGet("detail/{id:int}")]
     public async Task<IActionResult> Detail(int id)
     {
@@ -89,7 +100,12 @@ public class UserController : Controller
 
         return View(new UserDetailViewModel { User = user,Posts=posts });
     }
-
+    /// <summary>
+    /// Get-User edit form view
+    /// GET: /user/edit/:id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [HttpGet("edit/{id:int}")]
     public async Task<IActionResult> EditionRequest(int id)
     {
@@ -109,7 +125,12 @@ public class UserController : Controller
 
         return View("Edit", new UserRequest(user));
     }
-
+    /// <summary>
+    /// Post-update edited user data
+    /// POST: /user/edit
+    /// </summary>
+    /// <param name="userRequest"></param>
+    /// <returns></returns>
     [HttpPost("edit")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditUser(UserRequest userRequest)
@@ -124,6 +145,12 @@ public class UserController : Controller
         TempData["SuccessMsgForUser"] = "User has been updated successfully.";
         return RedirectToAction(nameof(Detail), new { id = userRequest.Id });
     }
+    /// <summary>
+    /// Get-Change password form view
+    /// GET: /user/ChangePassword/:id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [HttpGet("ChangePassword/{id:int}")]
     public async Task<IActionResult> ChangePassword(int id)
     {
@@ -142,27 +169,46 @@ public class UserController : Controller
 
         return View(new ChangePasswordRequest() { Id=userId});
     }
-
+    /// <summary>
+    /// Post-update password
+    /// POST: /user/ChangePassword
+    /// </summary>
+    /// <param name="changePasswordRequest"></param>
+    /// <returns></returns>
     [HttpPost("ChangePassword")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ChangePassword(ChangePasswordRequest changePasswordRequest)
     {
-        if (!ModelState.IsValid)
+        try
         {
-            return View(changePasswordRequest);
-        }
+            if (!ModelState.IsValid)
+            {
+                return View(changePasswordRequest);
+            }
 
-        var result=await _userService.ChangePasswordAsync(changePasswordRequest);
-        if (!result)
+            await _userService.ChangePasswordAsync(changePasswordRequest);
+
+            TempData["SuccessMsgForChangePassword"] = "Password has been updated successfully.";
+            return RedirectToAction(nameof(Detail), new { id = changePasswordRequest.Id });
+        }
+        catch (InvalidDataException ex)
         {
-            TempData["ErrMsgForChangePassword"] = "Wrong Old Password!";
+            TempData["ErrMsgForChangePassword"] = ex.Message;
             changePasswordRequest.ClearAllField();
             return View(changePasswordRequest);
         }
-        TempData["SuccessMsgForChangePassword"] = "Password has been updated successfully.";
-        return RedirectToAction(nameof(Detail), new { id = changePasswordRequest.Id });
+        catch (Exception ex)
+        {
+            TempData["ErrMsgForChangePassword"] = "Something Wrong While Changing Password!";
+            return View(changePasswordRequest);
+        }
     }
-
+    /// <summary>
+    /// Delete-A user
+    /// DELETE: /user/delete/:id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
     [HttpPost("delete/{id:int}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteUser(int id)
@@ -170,6 +216,58 @@ public class UserController : Controller
         await _userService.DeleteUserAsync(id);
         TempData["SuccessMsgForUser"] = "User has been deleted successfully.";
         return RedirectToAction(nameof(Index));
+    }
+    /// <summary>
+    /// Get-User list csv upload form view
+    /// GET: /user/upload
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(Roles = "Admin")]
+    [HttpGet("upload/")]
+    public async Task<IActionResult> UploadCSV()
+    {
+        return View();
+    }
+    /// <summary>
+    /// Post-Upload user list csv
+    /// POST: /user/upload
+    /// </summary>
+    /// <param name="uploadCSVRequest"></param>
+    /// <returns></returns>
+    [HttpPost("upload/")]
+    public async Task<IActionResult> UploadCSV(UploadCSVRequest uploadCSVRequest)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return View();
+            }
+            TempData["SuccessMsgForUpload"] = "User list has been upload successfully.";
+            return View();
+        }
+        catch (InvalidDataException ex)
+        {
+            TempData["ErrMsgForUpload"] = ex.Message;
+            return View();
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrMsgForUpload"] = "Something wrong while uploading user list.";
+            return View();
+        }
+    }
+    /// <summary>
+    /// Get-Download all users list csv
+    /// GET: /user/download-user-list
+    /// </summary>
+    /// <returns></returns>
+    [Authorize(Roles = "Admin")]
+    [HttpGet("download-user-list")]
+    public async Task<IActionResult> DownloadCSV()
+    {
+        var fileBytes=await _userService.DownloadUserListCSVAsync();
+        return File(fileBytes, "text/csv", $"User_list_{DateTime.Now:yyyy-MM-dd HH:mm}.csv");
     }
 
     private async Task AddDuplicateValidationErrors(UserRequest userRequest)

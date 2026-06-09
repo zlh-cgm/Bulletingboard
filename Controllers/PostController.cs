@@ -1,13 +1,10 @@
 ﻿using Bulletingboard.DTO.Post;
-using Bulletingboard.Entity;
 using Bulletingboard.Requests.Post;
-using Bulletingboard.Services.Comment;
 using Bulletingboard.Services.Post;
 using Bulletingboard.ViewModels.Post;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using System.Text.Json;
 
 namespace Bulletingboard.Controllers
 {
@@ -23,7 +20,11 @@ namespace Bulletingboard.Controllers
         }
 
 
-        // GET: /Post
+        /// <summary>
+        /// Get-All Public Posts and private Posts of logined user
+        /// GET: /Post
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -35,7 +36,12 @@ namespace Bulletingboard.Controllers
             return View(new PostListViewModel() { Data=posts});
         }
 
-        // GET: /Post/Details/5
+        /// <summary>
+        /// Get-Detail view of Post
+        /// GET: /Post/:id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> Details(int? id)
         {
@@ -59,7 +65,11 @@ namespace Bulletingboard.Controllers
             return View(new PostDetailViewModel() { Data=post});
         }
 
-        // GET: /Post/Create
+        /// <summary>
+        /// Get-View of create Post
+        /// GET: /Post/Create
+        /// </summary>
+        /// <returns></returns>
         [Authorize]
         [HttpGet]
         public IActionResult Create()
@@ -67,7 +77,12 @@ namespace Bulletingboard.Controllers
             return View();
         }
 
-        // POST: /Post/Create
+        /// <summary>
+        /// Post-New create Post
+        /// POST: /Post/Create
+        /// </summary>
+        /// <param name="postRequest"></param>
+        /// <returns></returns>
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -91,8 +106,12 @@ namespace Bulletingboard.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ==========================================
-        // GET: /Post/Edit/5
+        /// <summary>
+        /// Get-View of edit Post
+        /// GET: /Post/Edit/5
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)
@@ -116,7 +135,13 @@ namespace Bulletingboard.Controllers
             return View(new PostRequest(post));
         }
 
-        // POST: /Post/Edit/5
+        /// <summary>
+        /// Post-Edit a Post
+        /// POST: /Post/Edit/5
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="postRequest"></param>
+        /// <returns></returns>
         [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -136,26 +161,13 @@ namespace Bulletingboard.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ==========================================
-        // GET: /Post/Delete/5
-        [HttpGet]
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
 
-            var post = await _postService.GetPostByIdAsync(id.Value);
-            if (post == null)
-            {
-                return NotFound();
-            }
-
-            return View(post);
-        }
-
-        // POST: /Post/Delete/5
+        /// <summary>
+        /// Post-Delete a Post
+        /// POST: /Post/Delete/5
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [Authorize]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
