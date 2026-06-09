@@ -44,12 +44,12 @@ namespace Bulletingboard.Services.Auth
             };
             return result;
         }
-        public async Task<bool> SendEmailAsync(string email)
+        public async Task SendEmailAsync(string email)
         { 
             var user=await _userDao.DbGetUserByEmailAsync(email);
             if (user == null) 
             {
-                return false;
+                throw new InvalidDataException("There's no account link to this Email");
             }
             string token = Guid.NewGuid().ToString();
             user.ResetToken=token;
@@ -57,17 +57,19 @@ namespace Bulletingboard.Services.Auth
             string callbackUrl = $"https://localhost:7298/Auth/Reset/?userId={user.Id}&token={token}";
             await _emailSender.SendEmailAsync(email, "Reset Password", callbackUrl);
             await _userDao.DbUpdateUserAsync(user);
-            return true;
         }
 
-        public async Task<bool> ValidateResetLinkAsync(int id, string token)
+        public async Task ValidateResetLinkAsync(int id, string token)
         { 
             var user=await _userDao.DbGetUserByIdAsync(id);
-            if (user==null || user.ResetToken!=token || DateTime.Now>user.ResetTokenExpireAt)
+            if (user==null || user.ResetToken!=token)
             {
-                return false;
+                throw new InvalidDataException("Invalid token.");
             }
-            return true;
+            if (DateTime.Now > user.ResetTokenExpireAt)
+            {
+                throw new InvalidDataException("Password reset link expired.");
+            }
         }
 
         public async Task ResetPasswordAsync(ResetPasswordDto resetPasswordDto)

@@ -21,7 +21,7 @@ namespace Bulletingboard.Controllers
 
 
         /// <summary>
-        /// Get-All Public Posts and private Posts of logined user
+        /// Get-All Public Posts and private Posts of logined user(if not logined, no private post)
         /// GET: /Post
         /// </summary>
         /// <returns></returns>
@@ -96,7 +96,6 @@ namespace Bulletingboard.Controllers
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             int.TryParse(userIdString, out int userId);
 
-            postRequest.Id = userId;
             var post = new PostDto() {
             Description = postRequest.Description,
             IsPrivate = postRequest.IsPrivate,

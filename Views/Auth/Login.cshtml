@@ -8,8 +8,11 @@
 
 <form asp-action="Login" method="post">
     <div class="text-danger">
-        @Html.ValidationMessage("InvalidLogin")
-    </div>
+        @if (TempData["ErrMsgForLogin"] is not null)
+            {
+                <div class="alert alert-danger">@TempData["ErrMsgForLogin"]</div>    
+            }
+        </div>
 
     <div class="mb-3">
         <label asp-for="Email" class="form-label"></label>

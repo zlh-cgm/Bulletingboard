@@ -30,8 +30,7 @@ namespace Bulletingboard.Controllers
         {
             var newComment = new CommentDto(commentRequest);
 
-            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            int.TryParse(userIdString, out int userId);
+            int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int userId);
             var username = User.FindFirstValue(ClaimTypes.Name);
             newComment.UserId = userId;
             newComment.UserName = username;
@@ -46,6 +45,7 @@ namespace Bulletingboard.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)

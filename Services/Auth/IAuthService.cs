@@ -16,7 +16,7 @@ namespace Bulletingboard.Services.Auth
         /// <param name="id">user id</param>
         /// <param name="token">reset token</param>
         /// <returns></returns>
-        Task<bool> ValidateResetLinkAsync(int id, string token);
+        Task ValidateResetLinkAsync(int id, string token);
         /// <summary>
         /// Changes the user's password
         /// </summary>
@@ -28,6 +28,6 @@ namespace Bulletingboard.Services.Auth
         /// </summary>
         /// <param name="email">email</param>
         /// <returns></returns>
-        Task<bool> SendEmailAsync(string email);
+        Task SendEmailAsync(string email);
     }
 }

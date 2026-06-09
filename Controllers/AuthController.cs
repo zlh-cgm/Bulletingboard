@@ -33,7 +33,7 @@ namespace Bulletingboard.Controllers
         /// <param name="ReturnUrl"></param>
         /// <returns></returns>
         [HttpPost]
-        public async Task<IActionResult> Login(LoginRequest loginRequest, string ReturnUrl = null)
+        public async Task<IActionResult> Login(LoginRequest loginRequest)
         {
             if (!ModelState.IsValid)
             {
@@ -49,7 +49,7 @@ namespace Bulletingboard.Controllers
 
             if (loginResult is null)
             {
-                ModelState.AddModelError("InvalidLogin", "Invalid Credentials");
+                TempData["ErrMsgForLogin"] = "Invalid Credentials";
                 loginRequest.Password = "";
                 return View(loginRequest);
             }
@@ -70,12 +70,7 @@ namespace Bulletingboard.Controllers
             await HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal);
-
-            if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
-            {
-                return LocalRedirect(ReturnUrl);
-            }
-
+       
             return RedirectToAction("Index", "Post");
 
         }
@@ -109,18 +104,26 @@ namespace Bulletingboard.Controllers
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest forgotPasswordRequest)
         {
-            if (!ModelState.IsValid)
+            try
             {
+                if (!ModelState.IsValid)
+                {
+                    return View(forgotPasswordRequest);
+                }
+                await _authService.SendEmailAsync(forgotPasswordRequest.Email);
+                TempData["SuccessMsgForEmail"] = "Result link has been send to your email successfully.";
                 return View(forgotPasswordRequest);
             }
-            var result=await _authService.SendEmailAsync(forgotPasswordRequest.Email);
-            if (!result)
+            catch (InvalidDataException ex)
             {
-                TempData["ErrMsgForEmail"] = "There's no account link to this Email or There's ERROR while sending email";
+                TempData["ErrMsgForEmail"] = ex.Message;
                 return View();
             }
-            TempData["SuccessMsgForEmail"] = "Result link has been send to your email successfully.";
-            return View(forgotPasswordRequest);
+            catch (Exception)
+            {
+                TempData["ErrMsgForEmail"] = "Theren's ERR while sending email.";
+                return View();
+            }
         }
         /// <summary>
         /// Get-Reset password input form view
@@ -129,13 +132,17 @@ namespace Bulletingboard.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Reset(string userId, string token)
         {
-            int.TryParse(userId, out int id);
-            var isValid=await _authService.ValidateResetLinkAsync(id,token);
-            if (!isValid)
+            try
             {
+                int.TryParse(userId, out int id);
+                await _authService.ValidateResetLinkAsync(id, token);
+                return View(new ResetPasswordRequest() { Id = id });
+            }
+            catch (InvalidDataException ex)
+            {
+                TempData["ErrMsgForResetLink"]= ex.Message;
                 return RedirectToAction("InvalidToken", "Auth");
             }
-            return View(new ResetPasswordRequest() {Id=id });
         }
         /// <summary>
         /// Post-reset password form
