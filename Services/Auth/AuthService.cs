@@ -62,7 +62,11 @@ namespace Bulletingboard.Services.Auth
         public async Task ValidateResetLinkAsync(int id, string token)
         { 
             var user=await _userDao.DbGetUserByIdAsync(id);
-            if (user==null || user.ResetToken!=token)
+            if (user==null)
+            {
+                throw new InvalidDataException("User Not Found.");
+            }
+            if ( user.ResetToken==null || user.ResetToken!=token)
             {
                 throw new InvalidDataException("Invalid token.");
             }
