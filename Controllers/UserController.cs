@@ -248,7 +248,7 @@ public class UserController : Controller
             TempData["SuccessMsgForUpload"] = "User list has been upload successfully.";
             return View();
         }
-        catch (HeaderValidationException ex)
+        catch (HeaderValidationException)
         {
             TempData["ErrMsgForUpload"] = "Invalid CSV Header!";
             return View();
@@ -258,9 +258,9 @@ public class UserController : Controller
             TempData["ErrMsgForUpload"] = ex.Message;
             return View();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            TempData["ErrMsgForUpload"] = $"Something wrong while uploading user list.--{ex}";
+            TempData["ErrMsgForUpload"] = $"Something wrong while uploading user list.";
             return View();
         }
     }
