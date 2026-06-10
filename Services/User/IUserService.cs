@@ -24,6 +24,12 @@ public interface IUserService
     /// <returns></returns>
     Task AddUserAsync(UserDto userDto);
     /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="userDto"></param>
+    /// <returns></returns>
+    Task<int> AddOauthUserAsync(UserDto userDto);
+    /// <summary>
     /// Creates multiple new users at once
     /// </summary>
     /// <param name="users">List of Name,Email,Password</param>

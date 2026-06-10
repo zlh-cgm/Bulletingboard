@@ -51,6 +51,20 @@ public class UserService : IUserService
         userDto.Id = user.Id;
     }
 
+    public async Task<int> AddOauthUserAsync(UserDto userDto)
+    {
+        var userInDb = await _userDao.DbGetUserByEmailAsync(userDto.Email);
+        if (userInDb != null)
+        {
+            return userInDb.Id;
+        }
+        userDto.Role = 2;
+        var user = userDto.BindDbModel();
+        await _userDao.DbAddUserAsync(user);
+        var userId = (await _userDao.DbGetUserByEmailAsync(user.Email))?.Id ?? 0;
+        return userId;
+    }
+
     public async Task AddUserListAsync(List<UserRequest> userRequests)
     {
         foreach (var userRequest in userRequests)

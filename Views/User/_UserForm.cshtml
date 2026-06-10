@@ -52,8 +52,15 @@
     <span asp-validation-for="FileUpload" class="text-danger"></span>
     @if (!string.IsNullOrWhiteSpace(Model.Img))
     {
-        <div class="mt-2">
+        <div class="mt-2">   
+            if (User.FindFirstValue("email_verified") is null)
+            {
             <img src="~/uploads/users/@Model.Img" alt="@Model.Name" class="rounded border" style="height: 72px; width: 72px; object-fit: cover;" />
+            }
+            else
+            {
+            <img src="@Model.Img" alt="@Model.Name" class="img-thumbnail" />
+            }
         </div>
     }
 </div>

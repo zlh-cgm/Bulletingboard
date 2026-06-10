@@ -1,6 +1,7 @@
 using Bulletingboard.DAO.Comment;
 using Bulletingboard.DAO.Post;
 using Bulletingboard.DAO.User;
+using Bulletingboard.DTO.User;
 using Bulletingboard.Entity;
 using Bulletingboard.FluentValidators;
 using Bulletingboard.Services.Auth;
@@ -11,10 +12,13 @@ using Bulletingboard.Services.User;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using MySqlConnector;
+using System.Security.Claims;
+using System.Security.Principal;
 using UserEntity = Bulletingboard.Entity.User;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -62,6 +66,46 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
         options.SlidingExpiration = true;
         options.AccessDeniedPath = "/Home/AccessDenied";
+    })
+    .AddGoogleOpenIdConnect(options =>
+    {
+        options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+        options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+        options.Events = new OpenIdConnectEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var userService = context.HttpContext.RequestServices.GetRequiredService<IUserService>();
+
+                var googleId = context.Principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var email = context.Principal?.FindFirst(ClaimTypes.Email)?.Value;
+                var name = context.Principal?.FindFirst("name")?.Value;
+                var img = context.Principal?.FindFirst("picture")?.Value;
+
+                if (string.IsNullOrEmpty(googleId)) return;
+
+                var userDto = new UserDto() { Email = email, Name = name ,Img=img};
+                
+                var userId = await userService.AddOauthUserAsync(userDto);
+
+                if (context.Principal?.Identity is ClaimsIdentity claimsIdentity)
+                {
+                    var existingNameIdentifier = claimsIdentity.FindFirst(ClaimTypes.NameIdentifier);
+                    if (existingNameIdentifier != null)
+                    {
+                        claimsIdentity.RemoveClaim(existingNameIdentifier);
+                    }
+
+                    claimsIdentity.AddClaims(new[]
+                    {
+                    new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                    new Claim(ClaimTypes.Role, "Member"),
+                    new Claim(ClaimTypes.Name,name)
+                    });
+                }
+
+            }
+        };
     });
 
 var app = builder.Build();

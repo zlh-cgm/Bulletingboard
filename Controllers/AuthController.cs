@@ -75,6 +75,14 @@ namespace Bulletingboard.Controllers
 
         }
         /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult LoginWithGoogle()
+        {
+            return Challenge(new AuthenticationProperties { RedirectUri = "/" }, "GoogleOpenIdConnect");
+        }
+        /// <summary>
         /// Get-logout
         /// GET: /Auth/Logout
         /// </summary>

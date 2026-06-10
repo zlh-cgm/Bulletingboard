@@ -34,7 +34,15 @@
             <div class="col-md-3">
                 @if (!string.IsNullOrWhiteSpace(user.Img))
                 {
-                    <img src="~/uploads/users/@user.Img" alt="@user.Name" class="img-thumbnail" />
+                    if (User.FindFirstValue("email_verified") is null)
+                    {
+                        <img src="~/uploads/users/@user.Img" alt="@user.Name" class="img-thumbnail" />
+                    }
+                    else
+                    {
+                        <img src="@user.Img" alt="@user.Name" class="img-thumbnail" />
+
+                    } 
                 }
                 else
                 {
