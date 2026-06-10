@@ -58,7 +58,7 @@ public interface IUserService
     /// </summary>
     /// <param name="uploadCSVRequest">CSVFile</param>
     /// <returns></returns>
-    Task UploadUserListAsync(UploadCSVRequest uploadCSVRequest);
+    Task UploadUserListCSVAsync(UploadCSVRequest uploadCSVRequest);
     /// <summary>
     /// Download user list CSV file
     /// </summary>

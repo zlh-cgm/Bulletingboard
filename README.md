@@ -4,3 +4,6 @@ dotnet user-secrets set SendGridKey <key>
 
 //Database password
 dotnet user-secrets set DbPassword <key>
+
+//user csv upload header
+Name,Email,Password

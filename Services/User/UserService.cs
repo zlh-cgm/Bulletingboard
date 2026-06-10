@@ -143,7 +143,7 @@ public class UserService : IUserService
         }
     }
 
-    public async Task UploadUserListAsync(UploadCSVRequest uploadCSVRequest)
+    public async Task UploadUserListCSVAsync(UploadCSVRequest uploadCSVRequest)
     {
         using (var stream = uploadCSVRequest.CSVFile.OpenReadStream())
         using (var reader = new StreamReader(stream))

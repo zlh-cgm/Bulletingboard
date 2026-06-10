@@ -243,6 +243,7 @@ public class UserController : Controller
             {
                 return View();
             }
+            await _userService.UploadUserListCSVAsync(uploadCSVRequest);
             TempData["SuccessMsgForUpload"] = "User list has been upload successfully.";
             return View();
         }
