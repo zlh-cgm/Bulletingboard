@@ -4,6 +4,7 @@ using Bulletingboard.Requests.User;
 using Bulletingboard.Services.Post;
 using Bulletingboard.Services.User;
 using Bulletingboard.ViewModels.User;
+using CsvHelper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -247,6 +248,11 @@ public class UserController : Controller
             TempData["SuccessMsgForUpload"] = "User list has been upload successfully.";
             return View();
         }
+        catch (HeaderValidationException ex)
+        {
+            TempData["ErrMsgForUpload"] = "Invalid CSV Header!";
+            return View();
+        }
         catch (InvalidDataException ex)
         {
             TempData["ErrMsgForUpload"] = ex.Message;
@@ -254,7 +260,7 @@ public class UserController : Controller
         }
         catch (Exception ex)
         {
-            TempData["ErrMsgForUpload"] = "Something wrong while uploading user list.";
+            TempData["ErrMsgForUpload"] = $"Something wrong while uploading user list.--{ex}";
             return View();
         }
     }
