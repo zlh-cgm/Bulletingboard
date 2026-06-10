@@ -111,7 +111,7 @@ namespace Bulletingboard.Controllers
                     return View(forgotPasswordRequest);
                 }
                 await _authService.SendEmailAsync(forgotPasswordRequest.Email);
-                TempData["SuccessMsgForEmail"] = "Result link has been send to your email successfully.";
+                TempData["SuccessMsgForEmail"] = "Password Reset link has been send to your email successfully.";
                 return View(forgotPasswordRequest);
             }
             catch (InvalidDataException ex)
@@ -158,6 +158,14 @@ namespace Bulletingboard.Controllers
             }
             await _authService.ResetPasswordAsync(new ResetPasswordDto(resetPasswordRequest));
             TempData["SuccessMsgForReset"] = "Password has been saved successfully.";
+            return View();
+        }
+        /// <summary>
+        /// View for invalid reset link
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult InvalidToken()
+        {
             return View();
         }
     }
